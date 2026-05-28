@@ -89,10 +89,10 @@ public final class S3OffsetManagerEntry implements OffsetManager.OffsetManagerEn
         // which causes byte-level offset key mismatches and forces the connector to reprocess from scratch.
         // See: https://github.com/Aiven-Open/cloud-storage-connectors-for-apache-kafka/issues/599
         return () -> {
-            final Map<String, Object> m = new LinkedHashMap<>();
-            m.put(BUCKET, bucket);
-            m.put(OBJECT_KEY, s3ObjectKey);
-            return m;
+            final Map<String, Object> map = new LinkedHashMap<>();
+            map.put(BUCKET, bucket);
+            map.put(OBJECT_KEY, s3ObjectKey);
+            return map;
         };
     }
 
@@ -185,10 +185,10 @@ public final class S3OffsetManagerEntry implements OffsetManager.OffsetManagerEn
         // which causes byte-level offset key mismatches and forces the connector to reprocess from scratch.
         // See: https://github.com/Aiven-Open/cloud-storage-connectors-for-apache-kafka/issues/599
         return () -> {
-            final Map<String, Object> m = new LinkedHashMap<>();
-            m.put(BUCKET, bucket);
-            m.put(OBJECT_KEY, objectKey);
-            return m;
+            final Map<String, Object> map = new LinkedHashMap<>();
+            map.put(BUCKET, bucket);
+            map.put(OBJECT_KEY, objectKey);
+            return map;
         };
     }
 
