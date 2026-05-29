@@ -27,10 +27,8 @@ import io.aiven.kafka.connect.s3.source.config.S3SourceConfig;
 
 import org.apache.commons.io.function.IOSupplier;
 import org.apache.commons.lang3.StringUtils;
-import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
@@ -111,8 +109,7 @@ public class AWSV2SourceClient {
 
     public IOSupplier<InputStream> getObject(final String objectKey) {
         final GetObjectRequest getObjectRequest = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
-        final ResponseBytes<GetObjectResponse> s3ObjectResponse = s3Client.getObjectAsBytes(getObjectRequest);
-        return s3ObjectResponse::asInputStream;
+        return () -> s3Client.getObject(getObjectRequest);
     }
 
     public void shutdown() {

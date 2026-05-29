@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 import org.apache.kafka.connect.data.SchemaAndValue;
+import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.json.JsonConverter;
 
 import io.aiven.kafka.connect.common.config.SourceCommonConfig;
@@ -91,9 +92,9 @@ public class JsonTransformer extends Transformer {
                 } catch (IOException e) {
                     LOGGER.error("Error reading input stream: {}", e.getMessage(), e);
                     return false;
-                } catch (RuntimeException e) {
-                    LOGGER.error("Error converting line to Kafka Connect data, line content: '{}', error: {}",
-                            line, e.getMessage(), e);
+                } catch (DataException e) {
+                    LOGGER.error("Error converting line to Kafka Connect data, line content: '{}', error: {}", line,
+                            e.getMessage(), e);
                     return false;
                 }
             }
