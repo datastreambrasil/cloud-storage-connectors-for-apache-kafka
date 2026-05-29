@@ -20,6 +20,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 
@@ -30,9 +31,10 @@ import io.aiven.kafka.connect.common.source.OffsetManager;
 import io.aiven.kafka.connect.common.source.input.Transformer;
 import io.aiven.kafka.connect.s3.source.config.S3SourceConfig;
 
-import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
@@ -90,15 +92,15 @@ final class S3SourceRecordIteratorTest
         }
 
         /**
-         * Creates an S3 ResponseBytes object from the key and the data for that key. In this implementation the native
-         * key is a string so we just use String here.
+         * Creates a streaming ResponseInputStream from the key and the data for that key.
          *
          * @param key
          *            the key to build the response for.
-         * @return the ResponseBytes object for the key.
+         * @return the ResponseInputStream for the key.
          */
-        private ResponseBytes<byte[]> getResponse(final String key) {
-            return ResponseBytes.fromByteArray(new byte[0], getData(key).array());
+        private ResponseInputStream<GetObjectResponse> getResponseStream(final String key) {
+            return new ResponseInputStream<>(GetObjectResponse.builder().build(),
+                    new ByteArrayInputStream(getData(key).array()));
         }
 
         /**
@@ -123,9 +125,9 @@ final class S3SourceRecordIteratorTest
             // when a listObjectV2 is requests deququ the answer from the blocks.
             when(s3Client.listObjectsV2(any(ListObjectsV2Request.class))).thenAnswer(env -> dequeueData());
             when(s3Client.listObjectsV2(any(Consumer.class))).thenAnswer(env -> dequeueData());
-            // when an objectRequest is sent retrieve the response data.
-            when(s3Client.getObjectAsBytes(any(GetObjectRequest.class)))
-                    .thenAnswer(env -> getResponse(env.getArgument(0, GetObjectRequest.class).key()));
+            // when an objectRequest is sent retrieve the response stream.
+            when(s3Client.getObject(any(GetObjectRequest.class)))
+                    .thenAnswer(env -> getResponseStream(env.getArgument(0, GetObjectRequest.class).key()));
         }
     }
 

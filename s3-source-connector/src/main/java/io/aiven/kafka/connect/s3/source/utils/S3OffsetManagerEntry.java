@@ -17,6 +17,7 @@
 package io.aiven.kafka.connect.s3.source.utils;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +84,16 @@ public final class S3OffsetManagerEntry implements OffsetManager.OffsetManagerEn
      * @return a new instance of OffsetManagerKey
      */
     public static OffsetManager.OffsetManagerKey asKey(final String bucket, final String s3ObjectKey) {
-        return () -> Map.of(BUCKET, bucket, OBJECT_KEY, s3ObjectKey);
+        // LinkedHashMap guarantees insertion-order iteration, producing stable JSON serialization
+        // across JVM restarts. Map.of() has randomized iteration order (ImmutableCollections.REVERSE)
+        // which causes byte-level offset key mismatches and forces the connector to reprocess from scratch.
+        // See: https://github.com/Aiven-Open/cloud-storage-connectors-for-apache-kafka/issues/599
+        return () -> {
+            final Map<String, Object> map = new LinkedHashMap<>();
+            map.put(BUCKET, bucket);
+            map.put(OBJECT_KEY, s3ObjectKey);
+            return map;
+        };
     }
 
     /**
@@ -170,7 +180,16 @@ public final class S3OffsetManagerEntry implements OffsetManager.OffsetManagerEn
      */
     @Override
     public OffsetManager.OffsetManagerKey getManagerKey() {
-        return () -> Map.of(BUCKET, bucket, OBJECT_KEY, objectKey);
+        // LinkedHashMap guarantees insertion-order iteration, producing stable JSON serialization
+        // across JVM restarts. Map.of() has randomized iteration order (ImmutableCollections.REVERSE)
+        // which causes byte-level offset key mismatches and forces the connector to reprocess from scratch.
+        // See: https://github.com/Aiven-Open/cloud-storage-connectors-for-apache-kafka/issues/599
+        return () -> {
+            final Map<String, Object> map = new LinkedHashMap<>();
+            map.put(BUCKET, bucket);
+            map.put(OBJECT_KEY, objectKey);
+            return map;
+        };
     }
 
     @Override

@@ -245,6 +245,7 @@ public abstract class AbstractSourceRecordIterator<K extends Comparable<K>, N, O
                 .setKeyData(transformer.getKeyData(sourceRecord.getNativeKey(), sourceRecord.getTopic(), sourceConfig));
 
         lastSeenNativeKey = sourceRecord.getNativeKey();
+        getLogger().debug("Converting records from native item: {}", lastSeenNativeKey);
 
         // parquet handles compression internally.
         final CompressionType compressionType = transformer instanceof ParquetTransformer
